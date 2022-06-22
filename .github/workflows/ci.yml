@@ -9,6 +9,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
+
   # Enforces the consistency of code formatting using `.editorconfig` and the `dotnet-format` tool.
   check-format:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.id != github.event.pull_request.base.repo.id
@@ -50,6 +51,14 @@ jobs:
           dotnet-version: 6.0.x
       - name: Build
         run: dotnet build Consul.AspNetCore.Test --configuration=Release --framework=${{ matrix.framework }}
+      - name: Scan
+        if: matrix.os == 'ubuntu-18.04'
+        continue-on-error: false
+        uses: tidelift/alignment-action@main
+        env:
+          TIDELIFT_API_KEY: ${{ secrets.TIDELIFT_API_KEY }}
+          TIDELIFT_ORGANIZATION: ${{ secrets.TIDELIFT_ORGANIZATION }}
+          TIDELIFT_PROJECT: ${{ secrets.TIDELIFT_PROJECT }}
       - name: Run tests
         shell: bash
         run: dotnet test Consul.AspNetCore.Test --configuration=Release --logger "GitHubActions;report-warnings=false" --no-build -v=Normal --framework=${{ matrix.framework }}
